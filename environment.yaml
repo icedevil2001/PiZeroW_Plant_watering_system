@@ -3,8 +3,11 @@ name: PiZeroW_Plant_watering_system
 channels:
   - default
   - conda-forge
+  - rpi 
 dependencies:
   - python>=3.9.1 
   - flask
   - pandas
+  - pip:
+    - RPi.GPIO
   

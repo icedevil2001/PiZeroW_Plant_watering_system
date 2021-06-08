@@ -11,17 +11,29 @@
 ## Refresh auto page
 ## https://stackoverflow.com/questions/40963401/flask-dynamic-data-update-without-reload-page 
 
-
-
 ####
 ###  Reading live sensor
 ### https://stackoverflow.com/questions/62333250/trying-to-get-realtime-sensor-data-from-python-into-html-using-flask-and-jquery 
 ####
 
+### loggin ###
+## https://www.raspberrypi.org/forums/viewtopic.php?t=289151 
+########
+
 
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from datetime import datetime
 import json
+from pkg_resources import yield_lines
+
+from plotly.subplots import _subplot_type_for_trace_type
+from plotting import dash_application
+from time import sleep
+
+from Sensor import sensor, autofeeder
+
+# import RPi.GPIO as GPIO
+GPIO = 21
 
 from flask.signals import template_rendered 
 print(datetime.now().strftime("%Y-%m-%d %H:%M:%s"))
@@ -40,6 +52,7 @@ print(datetime.now().strftime("%Y-%m-%d %H:%M:%s"))
     # date, soil moisture before, after, water duration
 
 app  = Flask(__name__)
+dash_application(app)
 
 def load_config():
     with open("config/config.json", "r") as js:
@@ -54,7 +67,7 @@ def index():
     #return 'Hello World!'
     config_values =  load_config()
     print(config_values)
-    return render_template('index.html', today=str(datetime.today()), **config_values)
+    return render_template('index.html', title='main page', today=str(datetime.today()), **config_values)
 
 
 @app.route('/config', methods=['POST'])
@@ -65,15 +78,23 @@ def configuration():
 
 @app.route('/calibration/<state>')
 def calibration(state):
-
     pass
+
+@app.route('/sensor_calibartion', methods=['GET', 'POST'])
+def sensor_calibration(sensor, duration ):
+    return jsonify({
+        'sensor': sensor
+    })
+
+
 @app.route('/calibration/dry')
-def calibration_dry():
+def calibration_dry_page():
+    sensor_calibration(GPIO)
     pass
 
 
 @app.route('/calibration/wet')
-def calibration_wet():
+def calibration_wet_page():
     pass
 
  
@@ -113,47 +134,4 @@ if __name__ == '__main__':
 
 
 
-   ##logging
 
-
-## https://www.raspberrypi.org/forums/viewtopic.php?t=289151 
-# import flask
-# import logging
-
-# logger = logging.getLogger('provide_logger_for_flask')
-# logger.setLevel(logging.DEBUG)
-
-# class MemoryLogHandler(logging.Handler):
-#     """
-#     A handler class which provides formatted logging records to memory.
-#     """
-#     def __init__(self):
-#         logging.Handler.__init__(self)
-#         self.data = []
-
-#     def emit(self, record):
-#         self.data.append( record)
- 
-#     def get_data(self) -> str:
-#         print("get_data", self.data)
-#         r = ""
-#         for d in self.data:
-#             r += self.format(d) + "<br/>"
-#         return r
-    
-# memory_logger = MemoryLogHandler()
-# memory_logger.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# memory_logger.setFormatter(formatter)
-# logger.addHandler(memory_logger)
-
-# app = flask.Flask(__name__)
-
-# @app.route('/log')
-# def hello_logging():
-#     logger.debug("hello_logging")
-#     return "logging <pre>" + memory_logger.get_data() + "</pre>"
- 
-# if __name__ == '__main__':
-#     logger.info("START")
-#     app.run(host='0.0.0.0')
